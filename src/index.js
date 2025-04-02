@@ -1,9 +1,10 @@
 import "./styles.css";
 
-// const key = "PUZ7W68BYF79J538R4JS82TNM";
 const input = document.querySelector("#loc");
 const searchBtn = document.querySelector("#searchBtn");
+let weatherObj;
 
+// Function to process user input
 const processInput = (input) => {
   let finalInput = "London";
   const inputArr = input.value.toLocaleLowerCase().trim().split(" ");
@@ -15,29 +16,76 @@ const processInput = (input) => {
   return finalInput;
 };
 
-searchBtn.addEventListener("click", () => {
-  const finalInput = processInput(input);
-  getWeather(finalInput);
-});
+// Function to fetch data from API
+async function getWeather(finalInput) {
+  try {
+    const response = await fetch(
+      "https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/" +
+        finalInput +
+        "?unitGroup=us&key=PUZ7W68BYF79J538R4JS82TNM&contentType=json",
+      { mod: "cors" }
+    );
+    console.log(response);
+    const jsonResponse = await response.json();
+    return jsonResponse;
+  } catch (error) {
+    console.log(error);
+  }
+}
 
-input.addEventListener("keypress", (e) => {
-  if (e.key === "Enter") {
+// Function to process the data from API
+const processWeather = (jsonResponse) => {
+  console.log(jsonResponse);
+  const locName = jsonResponse.resolvedAddress;
+  const locTime = jsonResponse.currentConditions.datetime;
+  const locTemp = jsonResponse.currentConditions.temp;
+  const locCondition = jsonResponse.currentConditions.conditions;
+  const locDescription = jsonResponse.description;
+  return { locName, locTime, locTemp, locCondition, locDescription };
+};
+
+let form = document.querySelector("form");
+searchBtn.addEventListener("click", async (e) => {
+  if (form.checkValidity()) {
+    e.preventDefault();
     const finalInput = processInput(input);
-    getWeather(finalInput);
+    const jsonResponse = await getWeather(finalInput);
+    weatherObj = processWeather(jsonResponse);
+    console.log(weatherObj);
+    displayWeather(weatherObj);
+
+    // Clear input
+    form.reset();
   }
 });
 
-const getWeather = (finalInput) => {
-  fetch(
-    "https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/" +
-      finalInput +
-      "?unitGroup=us&key=PUZ7W68BYF79J538R4JS82TNM&contentType=json",
-    { mod: "cors" }
-  )
-    .then((response) => response.json())
-    .then((response) => {
-      console.log(response);
-      console.log(response.resolvedAddress);
-      console.log(response.description);
-    });
+input.addEventListener("keypress", async (e) => {
+  if (e.key === "Enter") {
+    if (form.checkValidity()) {
+      e.preventDefault();
+      const finalInput = processInput(input);
+      const jsonResponse = await getWeather(finalInput);
+      weatherObj = processWeather(jsonResponse);
+      console.log(weatherObj);
+      displayWeather(weatherObj);
+
+      // Clear input
+      form.reset();
+    }
+  }
+});
+
+// Function to display weather
+const displayWeather = (weatherObj) => {
+  // const locName = document.querySelector(".locName");
+  // const locTime = document.querySelector(".locTime");
+  // const locTemp = document.querySelector(".locTemp");
+  // const locCondition = document.querySelector(".locCondition");
+  // const locDescription = document.querySelector(".locDescription");
+  const weatherDisplay = document.querySelector(".weatherDisplay");
+  const allDivs = weatherDisplay.querySelectorAll("div");
+
+  allDivs.forEach((div) => {
+    div.textContent = weatherObj[div.className];
+  });
 };
