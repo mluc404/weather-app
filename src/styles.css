@@ -1,3 +1,12 @@
 body {
   background-color: skyblue;
 }
+
+main {
+  background-color: rgb(41, 184, 103);
+  background-image: url("./images/default.jpeg");
+  width: 60%;
+  height: 60vh;
+
+  background-size: cover;
+}
