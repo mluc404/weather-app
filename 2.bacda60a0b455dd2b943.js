@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunk=self.webpackChunk||[]).push([[2],{2:(b,e,s)=>{b.exports=s.p+"b0b370a8b89ba9b4402b.gif"}}]);
