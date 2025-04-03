@@ -8,7 +8,6 @@ class WeatherApp {
     this.main = document.querySelector("main");
     this.init();
   }
-
   init() {
     this.searchBtn.addEventListener("click", (e) => this.handleSearch(e));
     this.input.addEventListener("keypress", (e) => this.handleKeyPress(e));
@@ -29,23 +28,26 @@ class WeatherApp {
     if (this.input.checkValidity()) {
       const finalInput = this.processInput(this.input);
       const jsonResponse = await this.getWeather(finalInput);
-      const weatherObj = this.processWeather(jsonResponse);
-      this.displayWeather(weatherObj);
-      this.displayImage(weatherObj);
+      if (jsonResponse.locName !== "Error") {
+        // only continue if input location is proper
+        const weatherObj = this.processWeather(jsonResponse);
+        this.displayWeather(weatherObj);
+        this.displayImage(weatherObj);
+      }
       this.input.value = "";
     }
   }
 
   // Function to process user input
+  static DEFAULT_LOCATION = "london";
   processInput(input) {
-    let finalInput = "London";
-    const inputArr = input.value.toLocaleLowerCase().trim().split(" ");
-    if (inputArr.length > 0) {
-      finalInput = inputArr.join("%20");
+    const lowTrimInput = input.value.toLocaleLowerCase().trim();
+    const inputArr = lowTrimInput.split(" ");
+    if (inputArr.length > 1) {
+      return inputArr.join("%20"); // required syntax for api call
     } else {
-      finalInput = input;
+      return lowTrimInput;
     }
-    return finalInput;
   }
 
   // Function to fetch data from API
@@ -57,28 +59,28 @@ class WeatherApp {
           "?unitGroup=us&key=PUZ7W68BYF79J538R4JS82TNM&contentType=json",
         { mode: "cors" }
       );
-      // console.log(response);
       const jsonResponse = await response.json();
       return jsonResponse;
     } catch (error) {
       console.log(error);
-      alert("Please in put a proper location");
+      this.showError("Please input a proper location");
+      return { locName: "Error" };
     }
   }
 
   // Function to process the data from API
   processWeather(jsonResponse) {
-    try {
-      const locName = jsonResponse.resolvedAddress;
-      const locTime = jsonResponse.currentConditions.datetime;
-      const locTemp = jsonResponse.currentConditions.temp;
-      const locCondition = jsonResponse.currentConditions.conditions;
-      const locDescription = jsonResponse.description;
-      return { locName, locTime, locTemp, locCondition, locDescription }; // the weatherObj
-    } catch (error) {
-      console.log(error);
-      alert("Alert 2");
+    if (!jsonResponse || jsonResponse.locName === "Error") {
+      this.showError("Failed to process data");
+      return { locName: "Error" };
     }
+    return {
+      locName: jsonResponse.resolvedAddress,
+      locTime: jsonResponse.currentConditions.datetime,
+      locTemp: jsonResponse.currentConditions.temp,
+      locCondition: jsonResponse.currentConditions.conditions,
+      locDescription: jsonResponse.description,
+    };
   }
 
   // Function to display weather
@@ -94,131 +96,31 @@ class WeatherApp {
     });
   }
 
-  displayImage(weatherObj) {
+  async displayImage(weatherObj) {
     const allConditions = ["clear", "rain", "sun", "cloud", "snow"];
-    allConditions.forEach(async (name) => {
-      const mainCondition = weatherObj.locCondition
-        .toLocaleLowerCase()
-        .split(",")[0];
+    const mainCondition = weatherObj.locCondition
+      .toLocaleLowerCase()
+      .split(",")[0]
+      .trim();
+
+    for (const name of allConditions) {
       if (mainCondition.includes(name)) {
         const bg = await import(`./images/${name}.jpeg`);
         console.log(bg);
+        // the 'default' is just a property of the object 'bg' that contains the img url
         this.main.style.backgroundImage = `url(${bg.default})`;
+        return;
       }
-    });
+    }
+    // If there's no match, use the default bg
+    const defaultBG = await import(`./images/default.jpeg`);
+    console.log(defaultBG);
+    this.main.style.backgroundImage = `url(${defaultBG.default})`;
+  }
+
+  showError(msg) {
+    alert(msg);
   }
 }
 
 const app = new WeatherApp();
-
-// console.log(app);
-
-// const input = document.querySelector("#loc");
-// const searchBtn = document.querySelector("#searchBtn");
-// let weatherObj;
-
-// // Function to process user input
-// const processInput = (input) => {
-//   let finalInput = "London";
-//   const inputArr = input.value.toLocaleLowerCase().trim().split(" ");
-//   if (inputArr.length > 0) {
-//     finalInput = inputArr.join("%20");
-//   } else {
-//     finalInput = input;
-//   }
-//   return finalInput;
-// };
-
-// // Function to fetch data from API
-// async function getWeather(finalInput) {
-//   try {
-//     const response = await fetch(
-//       "https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/" +
-//         finalInput +
-//         "?unitGroup=us&key=PUZ7W68BYF79J538R4JS82TNM&contentType=json",
-//       { mode: "cors" }
-//     );
-//     console.log(response);
-//     const jsonResponse = await response.json();
-//     return jsonResponse;
-//   } catch (error) {
-//     console.log(error);
-//     alert("Please in put a proper location");
-//   }
-// }
-
-// // Function to process the data from API
-// const processWeather = (jsonResponse) => {
-//   console.log(jsonResponse);
-//   try {
-//     const locName = jsonResponse.resolvedAddress;
-//     const locTime = jsonResponse.currentConditions.datetime;
-//     const locTemp = jsonResponse.currentConditions.temp;
-//     const locCondition = jsonResponse.currentConditions.conditions;
-//     const locDescription = jsonResponse.description;
-//     return { locName, locTime, locTemp, locCondition, locDescription };
-//   } catch (error) {
-//     console.log(error);
-//     alert("Alert 2");
-//   }
-// };
-
-// let form = document.querySelector("form");
-// searchBtn.addEventListener("click", async (e) => {
-//   if (form.checkValidity()) {
-//     e.preventDefault();
-//     const finalInput = processInput(input);
-//     const jsonResponse = await getWeather(finalInput);
-//     weatherObj = processWeather(jsonResponse);
-//     console.log(weatherObj);
-//     displayWeather(weatherObj);
-
-//     // Clear input
-//     form.reset();
-//   }
-// });
-
-// input.addEventListener("keypress", async (e) => {
-//   if (e.key === "Enter") {
-//     if (form.checkValidity()) {
-//       e.preventDefault();
-//       const finalInput = processInput(input);
-//       const jsonResponse = await getWeather(finalInput);
-//       weatherObj = processWeather(jsonResponse);
-//       console.log(weatherObj);
-//       displayWeather(weatherObj);
-
-//       // Clear input
-//       form.reset();
-//     }
-//   }
-// });
-
-// const allConditions = ["clear", "rain", "sun", "cloud", "snow"];
-// const main = document.querySelector("main");
-// // Function to display weather
-// const displayWeather = (weatherObj) => {
-//   // const locName = document.querySelector(".locName");
-//   // const locTime = document.querySelector(".locTime");
-//   // const locTemp = document.querySelector(".locTemp");
-//   // const locCondition = document.querySelector(".locCondition");
-//   // const locDescription = document.querySelector(".locDescription");
-//   const weatherDisplay = document.querySelector(".weatherDisplay");
-//   const allDivs = weatherDisplay.querySelectorAll("div");
-
-//   allDivs.forEach((div) => {
-//     div.textContent = weatherObj[div.className];
-//   });
-
-//   console.log(weatherObj.locCondition);
-//   allConditions.forEach(async (name) => {
-//     const mainCondition = weatherObj.locCondition
-//       .toLocaleLowerCase()
-//       .split(",")[0];
-//     if (mainCondition.includes(name)) {
-//       const bg = await import(`./images/${name}.jpeg`);
-//       console.log(bg);
-//       main.style.backgroundImage = `url(${bg.default})`;
-//     }
-//   });
-// };
