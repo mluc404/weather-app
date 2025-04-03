@@ -28,6 +28,7 @@ class WeatherApp {
     if (this.input.checkValidity()) {
       const finalInput = this.processInput(this.input);
       const jsonResponse = await this.getWeather(finalInput);
+      console.log(jsonResponse);
       if (jsonResponse.locName !== "Error") {
         // only continue if input location is proper
         const weatherObj = this.processWeather(jsonResponse);
@@ -44,7 +45,7 @@ class WeatherApp {
     const lowTrimInput = input.value.toLocaleLowerCase().trim();
     const inputArr = lowTrimInput.split(" ");
     if (inputArr.length > 1) {
-      return inputArr.join("%20"); // required syntax for api call
+      return inputArr.join("%20");
     } else {
       return lowTrimInput;
     }
@@ -70,6 +71,8 @@ class WeatherApp {
 
   // Function to process the data from API
   processWeather(jsonResponse) {
+    console.log(jsonResponse.currentConditions.datetime);
+
     if (!jsonResponse || jsonResponse.locName === "Error") {
       this.showError("Failed to process data");
       return { locName: "Error" };
@@ -85,19 +88,21 @@ class WeatherApp {
 
   // Function to display weather
   displayWeather(weatherObj) {
-    // const locName = document.querySelector(".locName");
-    // const locTime = document.querySelector(".locTime");
-    // const locTemp = document.querySelector(".locTemp");
-    // const locCondition = document.querySelector(".locCondition");
-    // const locDescription = document.querySelector(".locDescription");
-    const allDivs = this.weatherDisplay.querySelectorAll("div");
-    allDivs.forEach((div) => {
-      div.textContent = weatherObj[div.className];
-    });
+    const locName = document.querySelector(".locName");
+    const locTime = document.querySelector(".locTime");
+    const locTemp = document.querySelector(".locTemp");
+    const locCondition = document.querySelector(".locCondition");
+    const locDescription = document.querySelector(".locDescription");
+
+    locName.textContent = weatherObj.locName;
+    locTime.textContent = this.convertAmPm(weatherObj.locTime);
+    locTemp.textContent = this.convertTemp(weatherObj.locTemp);
+    locCondition.textContent = weatherObj.locCondition;
+    locDescription.textContent = weatherObj.locDescription;
   }
 
   async displayImage(weatherObj) {
-    const allConditions = ["clear", "rain", "sun", "cloud", "snow"];
+    const allConditions = ["clear", "rain", "sun", "cloud", "snow"]; // need one for overcast
     const mainCondition = weatherObj.locCondition
       .toLocaleLowerCase()
       .split(",")[0]
@@ -105,11 +110,13 @@ class WeatherApp {
 
     for (const name of allConditions) {
       if (mainCondition.includes(name)) {
-        const bg = await import(`./images/${name}.jpeg`);
-        console.log(bg);
+        const bg = await import(`./images/gif/${name}.gif`);
         // the 'default' is just a property of the object 'bg' that contains the img url
         this.main.style.backgroundImage = `url(${bg.default})`;
         return;
+        // const bg = await import(`./images/${name}.jpeg`);
+        // this.main.style.backgroundImage = `url(${bg.default})`;
+        // return;
       }
     }
     // If there's no match, use the default bg
@@ -120,6 +127,24 @@ class WeatherApp {
 
   showError(msg) {
     alert(msg);
+  }
+
+  convertAmPm(time24) {
+    const timeArr = time24.split(":").slice(0, 2);
+    const h = parseInt(timeArr[0]);
+    const m = timeArr[1];
+    if (h < 12) {
+      return `${h}:${m} am`;
+    } else if (h === 12) {
+      return `${h}:${m} pm`;
+    } else {
+      return `${h - 12}:${m} pm`;
+    }
+  }
+
+  convertTemp(tempF) {
+    const tempC = (((tempF - 32) * 5) / 9).toFixed(1);
+    return `${tempF}\u00B0F (${tempC}\u00B0C)`;
   }
 }
 
