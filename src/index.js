@@ -1,16 +1,30 @@
 import "./styles.css";
 
 class WeatherApp {
+  static DEFAULT_LOCATION = "san diego";
+
   constructor() {
     this.input = document.querySelector("#loc");
     this.searchBtn = document.querySelector("#searchBtn");
     this.weatherDisplay = document.querySelector(".weatherDisplay");
-    this.main = document.querySelector("main");
+    this.appContent = document.querySelector(".appContent");
+    this.tempOptions = document.querySelectorAll("input[name='tempChoice']");
+    this.tempChoice = "F"; // default temperature in Fahrenheit
+    this.tempValue = null;
     this.init();
   }
   init() {
     this.searchBtn.addEventListener("click", (e) => this.handleSearch(e));
     this.input.addEventListener("keypress", (e) => this.handleKeyPress(e));
+    this.fetchAndDisplayDefault(); // display default location on startup
+    this.tempOptions.forEach(
+      (
+        choice // F and C temperature switch
+      ) =>
+        choice.addEventListener("change", (e) => {
+          this.selectTemp(e);
+        })
+    );
   }
 
   async handleSearch(e) {
@@ -26,7 +40,7 @@ class WeatherApp {
 
   async fetchAndDisplay() {
     if (this.input.checkValidity()) {
-      const finalInput = this.processInput(this.input);
+      const finalInput = this.processInput(this.input.value);
       const jsonResponse = await this.getWeather(finalInput);
       console.log(jsonResponse);
       if (jsonResponse.locName !== "Error") {
@@ -39,10 +53,23 @@ class WeatherApp {
     }
   }
 
+  // Function to display default location on startup
+  async fetchAndDisplayDefault() {
+    const finalInput = this.processInput(this.constructor.DEFAULT_LOCATION);
+    const jsonResponse = await this.getWeather(finalInput);
+    console.log(jsonResponse);
+    if (jsonResponse.locName !== "Error") {
+      // only continue if input location is proper
+      const weatherObj = this.processWeather(jsonResponse);
+      this.displayWeather(weatherObj);
+      this.displayImage(weatherObj);
+    }
+    this.input.value = "";
+  }
+
   // Function to process user input
-  static DEFAULT_LOCATION = "london";
   processInput(input) {
-    const lowTrimInput = input.value.toLocaleLowerCase().trim();
+    const lowTrimInput = input.toLocaleLowerCase().trim();
     const inputArr = lowTrimInput.split(" ");
     if (inputArr.length > 1) {
       return inputArr.join("%20");
@@ -77,6 +104,7 @@ class WeatherApp {
       this.showError("Failed to process data");
       return { locName: "Error" };
     }
+    this.tempValue = jsonResponse.currentConditions.temp;
     return {
       locName: jsonResponse.resolvedAddress,
       locTime: jsonResponse.currentConditions.datetime,
@@ -94,15 +122,21 @@ class WeatherApp {
     const locCondition = document.querySelector(".locCondition");
     const locDescription = document.querySelector(".locDescription");
 
-    locName.textContent = weatherObj.locName;
+    locName.textContent = this.getCityName(weatherObj.locName);
     locTime.textContent = this.convertAmPm(weatherObj.locTime);
-    locTemp.textContent = this.convertTemp(weatherObj.locTemp);
+    // Convert temp into user's preference system
+    if (this.tempChoice === "F") {
+      locTemp.textContent = `\u{1F321} ${weatherObj.locTemp}\u00B0`;
+    } else {
+      this.convertTemp(this.tempChoice, weatherObj.locTemp);
+      locTemp.textContent = `\u{1F321} ${this.tempValue}\u00B0`;
+    }
     locCondition.textContent = weatherObj.locCondition;
     locDescription.textContent = weatherObj.locDescription;
   }
 
   async displayImage(weatherObj) {
-    const allConditions = ["clear", "rain", "sun", "cloud", "snow"]; // need one for overcast
+    const allConditions = ["clear", "rain", "sun", "cloud", "snow", "overcast"];
     const mainCondition = weatherObj.locCondition
       .toLocaleLowerCase()
       .split(",")[0]
@@ -112,21 +146,22 @@ class WeatherApp {
       if (mainCondition.includes(name)) {
         const bg = await import(`./images/gif/${name}.gif`);
         // the 'default' is just a property of the object 'bg' that contains the img url
-        this.main.style.backgroundImage = `url(${bg.default})`;
+        this.appContent.style.backgroundImage = `url(${bg.default})`;
         return;
-        // const bg = await import(`./images/${name}.jpeg`);
-        // this.main.style.backgroundImage = `url(${bg.default})`;
-        // return;
       }
     }
     // If there's no match, use the default bg
     const defaultBG = await import(`./images/default.jpeg`);
     console.log(defaultBG);
-    this.main.style.backgroundImage = `url(${defaultBG.default})`;
+    this.appContent.style.backgroundImage = `url(${defaultBG.default})`;
   }
 
   showError(msg) {
     alert(msg);
+  }
+
+  getCityName(name) {
+    return name.split(",")[0];
   }
 
   convertAmPm(time24) {
@@ -142,9 +177,28 @@ class WeatherApp {
     }
   }
 
-  convertTemp(tempF) {
-    const tempC = (((tempF - 32) * 5) / 9).toFixed(1);
-    return `${tempF}\u00B0F (${tempC}\u00B0C)`;
+  convertTemp(choice, currentTemp) {
+    console.log(currentTemp);
+    if (choice === "C") {
+      const tempC = (((currentTemp - 32) * 5) / 9).toFixed(1);
+      this.tempValue = tempC;
+      return;
+    }
+    if (choice === "F") {
+      const tempF = ((currentTemp * 9) / 5 + 32).toFixed(1);
+      this.tempValue = tempF;
+      return;
+    }
+  }
+
+  selectTemp(e) {
+    if (e.target.checked && e.target.value !== this.tempChoice) {
+      const newTemp = this.convertTemp(e.target.value, this.tempValue);
+      this.tempChoice = e.target.value;
+      document.querySelector(
+        ".locTemp"
+      ).textContent = `\u{1F321} ${this.tempValue}\u00B0`;
+    }
   }
 }
 
