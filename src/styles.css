@@ -1,53 +1,50 @@
+/* ========== RESET & GLOBAL =========== */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
 body {
-  /* background-color: #505279; */
-  /* background-color: #1e212d; */
-
-  background-color: #1e2024;
-
-  /* background-color: #303339; */
-  /* background-color: #3d4149; */
-  /* background-color: #084d6b; */
   margin: 0;
   padding: 0;
-  box-sizing: border-box;
+}
+
+/* ========== CONTAINER ========== */
+.container {
+  height: 100vh;
+  height: 100svh;
+  width: 100vw;
+
   display: flex;
   flex-direction: column;
-  /* justify-content: center; */
   align-items: center;
+
   font-family: Arial, Helvetica, sans-serif;
+  background-color: #1e2024;
 }
 
-main {
-  /* background-size: cover; */
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 20px;
-
+header,
+main,
+footer {
   width: 100%;
-  height: 95vh;
 }
 
-.appName {
-  width: 100%;
-  /* height: 12vh; */
-  /* background-color: #1e212d; */
-
-  /* background-color: #101218; */
-
+/* ========== HEADER ========== */
+header {
+  flex: 1;
   background-color: #0b0c10;
-
-  /* color: #babcea; */
   color: #bacfea;
+
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 5px;
-  padding: 20px 0;
+  gap: 0.3rem;
+  padding: 0.5rem 0;
 }
+
 .appIcon {
   font-size: 3rem;
-
   text-align: center;
   align-content: center;
 }
@@ -58,26 +55,39 @@ h1 {
   text-align: center;
   align-content: center;
 }
-.appContent {
-  height: 60vh;
-  width: 30%;
-  min-width: 400px;
-  background-size: cover;
 
-  border-radius: 10px;
+/* ========== MAIN LAYOUT ========== */
+
+main {
+  flex: 8.5;
   display: flex;
-  flex-direction: column;
-  gap: 30px;
-  align-items: center;
+  justify-content: center;
 }
 
+/* ========== APP CONTENT ========== */
+.appContent {
+  height: 80%;
+  margin-top: 2%;
+  border-radius: 10px;
+  background-size: cover;
+  /* background-position: 60% 0%; */
+
+  display: flex;
+  flex-direction: column;
+  gap: 5%;
+  align-items: center;
+  padding: 2% 5% 0 5%;
+}
+
+/* ========== FORM ========== */
 form {
-  margin-top: 30px;
+  height: 10%;
   display: flex;
   justify-content: center;
   align-items: center;
   gap: 10px;
 }
+
 input {
   font-size: 1rem;
   border-radius: 5px;
@@ -86,13 +96,14 @@ input {
   background-color: rgba(30, 32, 45, 0.6);
   width: 60%;
   padding: 8px;
+}
 
-  color: rgb(209, 209, 209);
-  font-weight: 600;
-}
+input,
 input::placeholder {
+  font-weight: 600;
   color: rgb(209, 209, 209);
 }
+
 button {
   font-size: 1rem;
   font-weight: 600;
@@ -110,8 +121,9 @@ button:hover {
   color: rgb(228, 228, 228);
 }
 
+/* ========== WEATHER DISPLAY ========== */
 .weatherDisplay {
-  width: 80%;
+  height: 50%;
   border-radius: 10px;
   background-color: rgba(0, 0, 0, 0.6);
   color: white;
@@ -119,16 +131,12 @@ button:hover {
 
   display: flex;
   flex-direction: column;
-  gap: 10px;
-
-  padding: 20px 20px;
-
-  /* margin-bottom: 80px; */
+  gap: 5%;
+  padding: 6% 7%;
 }
 
 .locName {
   font-size: 2rem;
-  /* font-weight: 600; */
 }
 
 .timeAndTemp {
@@ -143,12 +151,16 @@ button:hover {
   line-height: 1.5rem;
 }
 
+/* ========== UNIT TOGGLE ========== */
 fieldset {
+  height: 10%;
+  align-self: flex-end;
   border: none;
   display: flex;
-  gap: 10px;
-  align-self: flex-end;
-  margin: 50px 10px 20px 0;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 0;
+  margin: 0;
 }
 
 .tempDiv {
@@ -161,8 +173,8 @@ fieldset {
 }
 
 input[type="radio"] {
-  width: 20px;
-  height: 20px;
+  width: 1rem;
+  height: 1rem;
   accent-color: #101218;
 }
 
@@ -170,73 +182,69 @@ input[type="radio"]:hover {
   cursor: pointer;
 }
 
+/* ========== FOOTER ========== */
 footer {
+  flex: 0.5;
+  background-color: #0b0c10;
   color: #bacfea;
-  width: 100%;
-  height: 5vh;
-  background-color: #101218;
+  font-size: 0.9rem;
 
   display: flex;
   justify-content: center;
   align-items: center;
-  /* font-weight: 600; */
-
-  font-size: 0.9rem;
+  font-weight: 600;
 }
+
 footer a {
   color: #bacfea;
-  /* text-decoration: none; */
-}
-
-footer a:hover {
-  text-decoration: underline;
 }
 
 footer p {
   display: flex;
-  gap: 10px;
+  gap: 0.4rem;
+  margin: 0;
 }
+
 #githubSpan {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 0.2rem;
 }
 
 #githubLogo {
-  width: 18px;
+  width: 1rem;
 }
 
-/* //////////////////////////////// */
-@media (width<500px) {
-  main {
-    gap: 30px;
-    height: 90vh;
+/* ========== MEDIA QUERIES =========== */
+
+@media (max-width: 500px) {
+  header {
+    align-items: last baseline;
+    flex: 0.8;
   }
 
-  .appName {
-    padding: 10px 0;
+  .appIcon {
+    font-size: 2.5rem;
   }
 
   h1 {
-    font-size: 1.8rem;
+    font-size: 2rem;
   }
+
   .appContent {
-    width: 50%;
-    min-width: 350px;
-    min-height: 460px;
-    gap: 10px;
-  }
-  form {
-    margin-top: 30px;
-    margin-bottom: 20px;
+    height: 100%;
+    width: 100%;
+    border-radius: 0;
+    margin: 0;
+    padding: 8% 5% 0 5%;
   }
 
   input {
     width: 60%;
-    padding: 8px;
+    padding: 0.7rem;
   }
 
   button {
-    padding: 8px;
+    padding: 0.7rem;
   }
 }

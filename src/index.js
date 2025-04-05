@@ -152,7 +152,6 @@ class WeatherApp {
     }
     // If there's no match, use the default bg
     const defaultBG = await import(`./images/default.jpeg`);
-    console.log(defaultBG);
     this.appContent.style.backgroundImage = `url(${defaultBG.default})`;
   }
 
